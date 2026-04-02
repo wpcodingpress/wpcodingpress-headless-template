@@ -1,28 +1,97 @@
-import { getPosts, getCategories } from '@/lib/api';
+import { getPosts, getCategories, isWordPressConfigured } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import PostCard from '@/components/PostCard';
 import Footer from '@/components/Footer';
 
+const DEMO_POSTS = [
+  {
+    id: 1,
+    title: 'Welcome to Your New Site',
+    slug: 'welcome',
+    content: 'This is a demo post. Connect your WordPress site to see your actual content.',
+    excerpt: 'Get started with your new headless WordPress site.',
+    date: new Date().toISOString(),
+    featuredImage: { node: { sourceUrl: 'https://placehold.co/600x400/2563eb/white?text=Demo+Post', altText: 'Demo' } },
+    categories: { nodes: [{ name: 'Getting Started', slug: 'getting-started' }] },
+    author: { node: { name: 'Admin', slug: 'admin' } },
+  },
+  {
+    id: 2,
+    title: 'Connect Your WordPress',
+    slug: 'connect-wordpress',
+    content: 'Configure your WordPress URL in the environment variables to fetch your content.',
+    excerpt: 'Learn how to connect your WordPress site.',
+    date: new Date().toISOString(),
+    featuredImage: { node: { sourceUrl: 'https://placehold.co/600x400/16a34a/white?text=Connect', altText: 'Connect' } },
+    categories: { nodes: [{ name: 'Tutorial', slug: 'tutorial' }] },
+    author: { node: { name: 'Admin', slug: 'admin' } },
+  },
+  {
+    id: 3,
+    title: 'Explore Features',
+    slug: 'explore-features',
+    content: 'This template supports categories, tags, custom post types, and more.',
+    excerpt: 'Discover all the features available.',
+    date: new Date().toISOString(),
+    featuredImage: { node: { sourceUrl: 'https://placehold.co/600x400/9333ea/white?text=Features', altText: 'Features' } },
+    categories: { nodes: [{ name: 'Features', slug: 'features' }] },
+    author: { node: { name: 'Admin', slug: 'admin' } },
+  },
+];
+
+const DEMO_CATEGORIES = [
+  { id: 1, name: 'Getting Started', slug: 'getting-started', count: 1 },
+  { id: 2, name: 'Tutorial', slug: 'tutorial', count: 1 },
+  { id: 3, name: 'Features', slug: 'features', count: 1 },
+];
+
 export default async function Home() {
+  const configured = isWordPressConfigured();
   let posts: any[] = [];
   let categories: any[] = [];
+  let error = '';
 
-  try {
-    posts = await getPosts(1, 12);
-  } catch (error) {
-    console.error('Failed to fetch posts:', error);
+  if (configured) {
+    try {
+      posts = await getPosts(1, 12);
+    } catch (e) {
+      error = e instanceof Error ? e.message : 'Failed to fetch posts';
+      console.error('Failed to fetch posts:', e);
+    }
+
+    if (!error) {
+      try {
+        categories = await getCategories();
+      } catch (e) {
+        console.error('Failed to fetch categories:', e);
+      }
+    }
   }
 
-  try {
-    categories = await getCategories();
-  } catch (error) {
-    console.error('Failed to fetch categories:', error);
+  if (!configured || error) {
+    posts = DEMO_POSTS;
+    categories = DEMO_CATEGORIES;
   }
+
+  const showNotice = !configured || !!error;
 
   return (
     <>
       <Navbar />
+      {showNotice && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+          <div className="container-custom py-3">
+            <p className="text-amber-800 dark:text-amber-200 text-sm text-center">
+              {error ? (
+                <>Demo mode: {error}. Showing sample content.</>
+              ) : (
+                <>Demo mode: WordPress not connected. Set NEXT_PUBLIC_WORDPRESS_URL environment variable to connect your site.</>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
       <Hero />
       
       {/* Posts Grid */}

@@ -1,6 +1,10 @@
 const WP_URL = process.env.NEXT_PUBLIC_WORDPRESS_URL || 'http://localhost:10002';
 const API_BASE = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || `${WP_URL}/wp-json/eyepress/v1`;
 
+export function isWordPressConfigured(): boolean {
+  return !!process.env.NEXT_PUBLIC_WORDPRESS_URL || !!process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+}
+
 interface Post {
   id: number;
   title: string;
@@ -31,22 +35,31 @@ interface Category {
 }
 
 async function fetchAPI(endpoint: string, params: Record<string, string> = {}) {
+  if (!isWordPressConfigured()) {
+    throw new Error('WordPress not configured');
+  }
+
   const url = new URL(`${API_BASE}/${endpoint}`);
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, value);
   });
 
-  const res = await fetch(url.toString(), {
-    headers: { 'Content-Type': 'application/json' },
-    next: { revalidate: 60 },
-  });
+  try {
+    const res = await fetch(url.toString(), {
+      headers: { 'Content-Type': 'application/json' },
+      next: { revalidate: 60 },
+    });
 
-  if (!res.ok) {
-    console.error(`API Error: ${res.status} - ${res.statusText}`);
-    throw new Error(`Failed to fetch ${endpoint}`);
+    if (!res.ok) {
+      console.error(`API Error: ${res.status} - ${res.statusText}`);
+      throw new Error(`Failed to fetch ${endpoint}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error(`API Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw error;
   }
-
-  return res.json();
 }
 
 export async function getPosts(page = 1, perPage = 12, category?: string): Promise<Post[]> {
