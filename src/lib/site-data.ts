@@ -104,35 +104,35 @@ function createDefaultSiteData(siteName?: string): NormalizedSiteData {
   }
 }
 
-export function getSiteDataFromEnv(): NormalizedSiteData | null {
+export async function fetchSiteData(): Promise<NormalizedSiteData | null> {
+  const dataUrl = process.env.NEXT_PUBLIC_SITE_DATA_URL
+  if (dataUrl) {
+    try {
+      const cacheBuster = `?t=${Date.now()}`
+      const res = await fetch(`${dataUrl}${cacheBuster}`, {
+        next: { revalidate: 30 },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        if (json?.site) {
+          return json.site as NormalizedSiteData
+        }
+      }
+    } catch {
+      console.warn('[SiteData] Failed to fetch from URL')
+    }
+  }
+
   const raw = process.env.NEXT_PUBLIC_SITE_DATA
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as NormalizedSiteData
-  } catch {
-    console.warn('[SiteData] Failed to parse NEXT_PUBLIC_SITE_DATA env var')
-    return null
+  if (raw) {
+    try {
+      return JSON.parse(raw) as NormalizedSiteData
+    } catch {
+      console.warn('[SiteData] Failed to parse NEXT_PUBLIC_SITE_DATA env var')
+    }
   }
-}
 
-export function getSiteDataUrl(): string | null {
-  return process.env.NEXT_PUBLIC_SITE_DATA_URL || null
-}
-
-export function hasSiteData(): boolean {
-  return !!process.env.NEXT_PUBLIC_SITE_DATA || !!process.env.NEXT_PUBLIC_SITE_DATA_URL
-}
-
-export async function fetchSiteDataFromUrl(url: string): Promise<NormalizedSiteData | null> {
-  try {
-    const res = await fetch(url, { next: { revalidate: 60 } })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.site as NormalizedSiteData
-  } catch {
-    console.warn('[SiteData] Failed to fetch from URL:', url)
-    return null
-  }
+  return null
 }
 
 export { createDefaultSiteData }

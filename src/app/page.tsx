@@ -1,23 +1,13 @@
 import AdaptiveTemplate from '@/components/templates/AdaptiveTemplate'
 import {
-  getSiteDataFromEnv,
-  getSiteDataUrl,
-  hasSiteData,
-  fetchSiteDataFromUrl,
+  fetchSiteData,
   createDefaultSiteData,
 } from '@/lib/site-data'
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home() {
-  let siteData = getSiteDataFromEnv()
-
-  if (!siteData) {
-    const dataUrl = getSiteDataUrl()
-    if (dataUrl) {
-      siteData = await fetchSiteDataFromUrl(dataUrl)
-    }
-  }
+  let siteData = await fetchSiteData()
 
   if (!siteData) {
     siteData = createDefaultSiteData(process.env.NEXT_PUBLIC_SITE_NAME || undefined)
@@ -35,7 +25,7 @@ export default async function Home() {
             Deploy your site through the WPCodingPress dashboard to see your content here.
           </p>
           <div className="text-xs text-gray-400">
-            Set NEXT_PUBLIC_SITE_DATA or NEXT_PUBLIC_SITE_DATA_URL environment variables.
+            Set NEXT_PUBLIC_SITE_DATA_URL environment variable.
           </div>
         </div>
       </div>
