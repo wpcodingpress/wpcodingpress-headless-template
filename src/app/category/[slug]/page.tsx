@@ -9,16 +9,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  let categories: any[] = [];
-  try {
-    categories = await getCategories();
-  } catch {
-    categories = [];
-  }
-  
-  return categories.map((cat) => ({ slug: cat.slug }));
-}
+export const dynamic = 'force-dynamic'
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
@@ -32,7 +23,6 @@ export default async function CategoryPage({ params }: Props) {
     console.error('Failed to fetch category posts:', error);
   }
 
-  // Try to get category name from categories list
   try {
     const categories = await getCategories();
     const cat = categories.find((c: any) => c.slug === slug);

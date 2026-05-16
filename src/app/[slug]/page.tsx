@@ -1,4 +1,4 @@
-import { getPost, getAllPostSlugs } from '@/lib/api';
+import { getPost } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Image from 'next/image';
@@ -10,16 +10,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  let slugs: string[] = [];
-  try {
-    slugs = await getAllPostSlugs();
-  } catch {
-    slugs = [];
-  }
-  
-  return slugs.map((slug) => ({ slug }));
-}
+export const dynamic = 'force-dynamic'
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
@@ -43,7 +34,6 @@ export default async function PostPage({ params }: Props) {
       
       <article className="min-h-screen bg-gray-50 dark:bg-dark-900 pt-24 pb-16">
         <div className="container-custom">
-          {/* Back Link */}
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-8 dark:text-gray-400"
@@ -52,7 +42,6 @@ export default async function PostPage({ params }: Props) {
             Back to Home
           </Link>
 
-          {/* Post Header */}
           <header className="max-w-4xl mx-auto mb-12">
             <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
               <span className="flex items-center gap-1">
@@ -85,7 +74,6 @@ export default async function PostPage({ params }: Props) {
             </div>
           </header>
 
-          {/* Featured Image */}
           <div className="relative h-[400px] md:h-[600px] rounded-2xl overflow-hidden mb-12">
             <Image
               src={imageUrl}
@@ -96,7 +84,6 @@ export default async function PostPage({ params }: Props) {
             />
           </div>
 
-          {/* Post Content */}
           <div className="max-w-4xl mx-auto">
             <div 
               className="prose prose-lg dark:prose-invert max-w-none"
