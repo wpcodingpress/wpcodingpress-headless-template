@@ -4,6 +4,8 @@
 
 :root {
   --font-inter: 'Inter', system-ui, sans-serif;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
 }
 
 html {
@@ -51,7 +53,11 @@ body {
   50% { transform: translateY(-10px); }
 }
 
-/* Dark mode transition */
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .dark body {
   background-color: #171717;
 }

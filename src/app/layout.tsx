@@ -4,10 +4,14 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-export const metadata: Metadata = {
-  title: "WPCodingPress Headless",
-  description: "Premium Headless WordPress Site",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "WPCodingPress Headless";
+
+  return {
+    title: siteName,
+    description: "Premium Headless WordPress Site",
+  };
+}
 
 export default function RootLayout({
   children,
